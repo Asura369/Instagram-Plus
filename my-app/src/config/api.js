@@ -24,6 +24,7 @@ export const API_ENDPOINTS = {
     profile: createApiUrl('users/profile'),
     editProfile: createApiUrl('users/editProfile'),
     users: createApiUrl('users'),
+    viewedStories: createApiUrl("users/viewedStories"),
     userById: (id) => createApiUrl(`users/${id}`),
     follow: (id) => createApiUrl(`users/${id}/follow`),
     searchUsers: (query) => createApiUrl(`users/search/${encodeURIComponent(query)}`),
