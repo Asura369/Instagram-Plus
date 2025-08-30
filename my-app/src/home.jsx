@@ -5,7 +5,7 @@ import PostCard from './components/PostCard'
 import ForYouFeed from './components/ForYouFeed'
 import Modal from 'react-modal'
 import { API_ENDPOINTS } from './config/api'
-import { FiChevronLeft, FiChevronRight } from 'react-icons/fi'
+import { BsChevronLeft, BsChevronRight } from 'react-icons/bs'
 
 const PAGE_SIZE = 5
 
@@ -15,9 +15,11 @@ const Home = () => {
     const [stories, setStories] = useState({})
     const [storiesProfile, setStoriesProfile] = useState([])
     const [storiesLoaded, setStoriesLoaded] = useState(false)
-    const [showStorySlides, setShowStorySlides] = useState(false)
+    const [showStorySlides, setShowStorySlides] = useState([false, null])
     const [currentStory, setCurrentStory] = useState(0)
+    const [allProfiles, setStoryProfiles] = useState({})
     const [activeTab, setActiveTab] = useState('following') // New state for tab switching
+    const [storiesViewed, setStoriesViewed] = useState([])
 
     const [cursor, setCursor] = useState(null)
     const [hasMore, setHasMore] = useState(true)
@@ -42,9 +44,9 @@ const Home = () => {
     const openStorySlides = authorId => {
         setCurrentStory(authorId)
         storyRef.current[authorId].style.border = "none"
-        setShowStorySlides(true)
+        setShowStorySlides([true, authorId])
     }
-    const closeStorySlides = () => setShowStorySlides(false)
+    const closeStorySlides = () => setShowStorySlides([false, null])
 
     const refreshUser = async () => {
         try {
@@ -109,6 +111,31 @@ const Home = () => {
         }
     }
 
+    const updateViewedStories = async (authorId) => {
+        try {
+            const res = await axios.patch(API_ENDPOINTS.viewedStories, {"authorId": authorId}, {
+                headers: authHeaders
+            })
+        } catch (err) {
+            console.error('Failed to add viewed authors:', err)
+        }
+    }
+
+    useEffect(() => {
+        const getStoriesViewed = async () => {
+            try {
+                if (!token) return
+                const res = await axios.get(API_ENDPOINTS.viewedStories, {
+                    headers: authHeaders
+                })
+                setStoriesViewed(res.data.storiesViewed);
+            } catch (err) {
+                console.error('Failed to refresh user data:', err)
+            }
+        }
+        getStoriesViewed();
+    }, [])
+
     // initial page: guard StrictMode double-mount
     useEffect(() => {
         if (postsInitRef.current) return
@@ -169,39 +196,73 @@ const Home = () => {
         }
     }, [storiesLoaded])
 
-    function StorySlideShow(storyList) {
-        const [index, setIndex] = useState(0);
+    useEffect(() => {
+        if(storiesProfile.length > 0) {
+            storiesProfile.forEach((s) => (setStoryProfiles((previousProfiles) => ({...previousProfiles, [s._id]: [s.profilePic, s.username]}))));
+        }
+    }, [storiesProfile])
 
-        const allUserStories = storyList.storyList;
+    function StorySlideShow({storyList}) {
+        const allUserWithStories = Object.keys(storyList.storyList);
+        const allUsersStories = storyList.storyList;
+        const [index, setIndex] = useState(0);
+        const [authorIndex, setAuthorIndex] = useState(allUserWithStories.indexOf(storyList.authorId));
 
         const previousStory = () => {
-            setIndex((previousIndex) => (previousIndex === 0 ? (allUserStories.length - 1) : (previousIndex - 1)));
+            if (index === 0) {
+                setIndex(0);
+                if (authorIndex === 0) {
+                    setAuthorIndex(allUserWithStories.length - 1);
+                } else {
+                    setAuthorIndex((previousAuthorIndex) => previousAuthorIndex - 1);
+                }
+            } else {
+                setIndex((previousIndex) => (previousIndex - 1));
+            }
         }
         const nextStory = () => {
-            setIndex((previousIndex) => (previousIndex === (allUserStories.length - 1) ? 0 : (previousIndex + 1)));
+            if (index === allUsersStories[allUserWithStories[authorIndex]].length - 1) {
+                setIndex(0);
+                if (authorIndex === allUsersStories[allUserWithStories[authorIndex]].length - 1) {
+                    setAuthorIndex(0);
+                } else {
+                    setAuthorIndex((previousAuthorIndex) => previousAuthorIndex + 1);
+                }
+            } else {
+                setIndex((previousIndex) => (previousIndex + 1));
+            }
         }
 
         return (
-            <div className='slide-display'>
-                <button onClick={previousStory}>
-                    <FiChevronLeft size={24}/>
-                </button>
-                <img
-                    key={currentStory + index}
-                    src={allUserStories[index]}
-                    alt='Story'
-                    style={{ width: "75%", height: "75%" }}
+            <div style={{display: "block"}}>
+                <img 
+                    key={allProfiles[allUserWithStories[authorIndex]] ? allProfiles[allUserWithStories[authorIndex]][0] + authorIndex : null}
+                    src={allProfiles[allUserWithStories[authorIndex]] ? allProfiles[allUserWithStories[authorIndex]][0] : null}
+                    alt="profile"
+                    style={{ width: 72, height: 72, borderRadius: '50%', objectFit: 'cover'}}
                 />
-                <button onClick={nextStory}>
-                    <FiChevronRight size={24}/>
-                </button>
+                <p>{allProfiles[allUserWithStories[authorIndex]] ? allProfiles[allUserWithStories[authorIndex]][1] : null}</p>
+                <div className='slide-display'>
+                    <button onClick={previousStory}>
+                        <BsChevronLeft size={24}/>
+                    </button>
+                    <img
+                        key={currentStory + index}
+                        src={allUsersStories[allUserWithStories[authorIndex]] ? allUsersStories[allUserWithStories[authorIndex]][index] : null}
+                        alt='Story'
+                        style={{ width: "300px", height: "300px" }}
+                    />
+                    <button onClick={nextStory}>
+                        <BsChevronRight size={24}/>
+                    </button>
+                </div>
             </div>
         )
     }
 
     return (
         <div className='feed-container'>
-            <Modal isOpen={showStorySlides} onRequestClose={closeStorySlides} style={
+            <Modal isOpen={(showStorySlides[0])} onRequestClose={closeStorySlides} style={
                     {content: {
                         display: "flex",
                         justifyContent: "center",
@@ -224,7 +285,7 @@ const Home = () => {
                 }>
                 {currentStory && (
                     <div className='story-content'>
-                        <StorySlideShow storyList={stories[currentStory]}/>
+                        <StorySlideShow storyList={{"storyList": stories, "authorId": showStorySlides[1]}}/>
                     </div>
                 )}
             </Modal>
@@ -239,13 +300,18 @@ const Home = () => {
                             <a onClick={e => {
                                 e.preventDefault()
                                 openStorySlides(s._id)
+                                updateViewedStories(s._id)
                             }}>
                                 <div className='story' style={{ flex: '0 0 auto' }}>
                                     <img
                                         src={s.profilePic}
                                         alt='Story'
                                         className='story-image'
-                                        style={{ width: 72, height: 72, borderRadius: '50%', objectFit: 'cover', border: '2px solid #e1306c' }}
+                                        style={{ width: 72, 
+                                            height: 72, 
+                                            borderRadius: '50%', 
+                                            objectFit: 'cover', 
+                                            border: storiesViewed.includes(s._id) ? "none" : '2px solid #e1306c' }}
                                         ref={(element) => {
                                             storyRef.current[s._id] = element
                                         }}

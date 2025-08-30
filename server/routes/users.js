@@ -4,6 +4,27 @@ import auth from '../middleware/auth.js'
 
 const router = express.Router()
 
+router.patch('/viewedStories', auth, async (req, res) => {
+    try {
+        const user = await User.findByIdAndUpdate(
+            req.userId,
+            { $addToSet: {storiesViewed: req.body.authorId} }
+        )
+        res.status(200).json(user)
+    } catch (err) {
+        res.status(500).json({ message: err.message })
+    }
+})
+
+router.get('/viewedStories', auth, async (req, res) => {
+    try {
+        const user = await User.findById(req.userId).select("storiesViewed")
+        res.status(200).json(user)
+    } catch (err) {
+        res.status(500).json({ message: err.message })
+    }
+})
+
 router.get('/profile', auth, async (req, res) => {
     try {
         const user = await User.findById(req.userId)

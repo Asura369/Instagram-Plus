@@ -8,6 +8,7 @@ const userSchema = mongoose.Schema({
     followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     stories: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Story' }],
+    storiesViewed: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
 }, { timestamps: true })
 
 export default mongoose.model('User', userSchema)

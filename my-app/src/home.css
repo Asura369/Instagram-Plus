@@ -35,6 +35,10 @@
     width: 50px;
 }
 
+.ReactModal__Overlay {
+    z-index: 999999999;
+}
+
 .post-caption {
     padding: 10px;
     font-size: 14px;
