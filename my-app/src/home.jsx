@@ -254,6 +254,7 @@ const Home = () => {
                     href={allUsersStories[allUserWithStories[authorIndex]][index]}
                     download="instagram-image"
                     target='_blank'
+                    rel="noopener noreferrer"
                     style={{
                         background: "none", border: "none"
                     }}>
