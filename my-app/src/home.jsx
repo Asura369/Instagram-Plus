@@ -209,6 +209,10 @@ const Home = () => {
         const [authorIndex, setAuthorIndex] = useState(allUserWithStories.indexOf(storyList.authorId));
 
         const previousStory = () => {
+            if (!storiesViewed.includes(allUserWithStories[authorIndex])) {
+                storiesViewed.push(allUserWithStories[authorIndex]);
+                updateViewedStories(allUserWithStories[authorIndex]);
+            }
             if (index === 0) {
                 setIndex(0);
                 if (authorIndex === 0) {
@@ -221,9 +225,13 @@ const Home = () => {
             }
         }
         const nextStory = () => {
+            if (!storiesViewed.includes(allUserWithStories[authorIndex])) {
+                storiesViewed.push(allUserWithStories[authorIndex]);
+                updateViewedStories(allUserWithStories[authorIndex]);
+            }
             if (index === allUsersStories[allUserWithStories[authorIndex]].length - 1) {
                 setIndex(0);
-                if (authorIndex === allUsersStories[allUserWithStories[authorIndex]].length - 1) {
+                if (authorIndex === allUserWithStories.length - 1) {
                     setAuthorIndex(0);
                 } else {
                     setAuthorIndex((previousAuthorIndex) => previousAuthorIndex + 1);
@@ -243,18 +251,24 @@ const Home = () => {
                 />
                 <p>{allProfiles[allUserWithStories[authorIndex]] ? allProfiles[allUserWithStories[authorIndex]][1] : null}</p>
                 <div className='slide-display'>
-                    <button onClick={previousStory}>
+                   {(allUserWithStories.length > 1) ? <button onClick={previousStory} 
+                        style={{
+                            background: "none", border: "none"
+                        }}>
                         <BsChevronLeft size={24}/>
-                    </button>
+                    </button> : <></>}
                     <img
                         key={currentStory + index}
                         src={allUsersStories[allUserWithStories[authorIndex]] ? allUsersStories[allUserWithStories[authorIndex]][index] : null}
                         alt='Story'
                         style={{ width: "300px", height: "300px" }}
                     />
-                    <button onClick={nextStory}>
+                    {(allUserWithStories.length > 1) ? <button onClick={nextStory} 
+                        style={{
+                            background: "none", border: "none"
+                        }}>
                         <BsChevronRight size={24}/>
-                    </button>
+                    </button> : <></>}
                 </div>
             </div>
         )
@@ -274,6 +288,7 @@ const Home = () => {
                     },
                     overlay: {
                         display: "flex",
+                        backgroundColor: "rgba(0, 0, 0, 0.6)",
                         textAlign: "center",
                         justifyContent: "center",
                         alignContent: "center",
