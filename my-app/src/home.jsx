@@ -5,7 +5,7 @@ import PostCard from './components/PostCard'
 import ForYouFeed from './components/ForYouFeed'
 import Modal from 'react-modal'
 import { API_ENDPOINTS } from './config/api'
-import { BsChevronLeft, BsChevronRight } from 'react-icons/bs'
+import { BsChevronLeft, BsChevronRight, BsDownload } from 'react-icons/bs'
 
 const PAGE_SIZE = 5
 
@@ -250,6 +250,13 @@ const Home = () => {
                     style={{ width: 72, height: 72, borderRadius: '50%', objectFit: 'cover'}}
                 />
                 <p>{allProfiles[allUserWithStories[authorIndex]] ? allProfiles[allUserWithStories[authorIndex]][1] : null}</p>
+                <a
+                    download={allUsersStories[allUserWithStories[authorIndex]][index]}
+                    style={{
+                        background: "none", border: "none"
+                    }}>
+                        <BsDownload size={24}/>
+                </a>
                 <div className='slide-display'>
                    {(allUserWithStories.length > 1) ? <button onClick={previousStory} 
                         style={{
@@ -261,7 +268,7 @@ const Home = () => {
                         key={currentStory + index}
                         src={allUsersStories[allUserWithStories[authorIndex]] ? allUsersStories[allUserWithStories[authorIndex]][index] : null}
                         alt='Story'
-                        style={{ width: "300px", height: "300px" }}
+                        style={{ width: "500px", height: "500px" }}
                     />
                     {(allUserWithStories.length > 1) ? <button onClick={nextStory} 
                         style={{
