@@ -1,0 +1,7 @@
+# ads.txt file for Instagram Plus
+# Publisher ID: pub-6848142315187904
+
+google.com, pub-6848142315187904, DIRECT, f08c47fec0942fa0
+
+# Additional authorized sellers can be added below
+# Format: domain, publisherAccountID, relationshipType, certificationAuthorityID
