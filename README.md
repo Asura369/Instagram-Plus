@@ -1,5 +1,7 @@
 # Instagram-Plus
 
+## The app is deployed at [https://instaplus.up.railway.app/](https://instaplus.up.railway.app/)
+
 ## Installation
 
 1. Clone the repository:
@@ -36,4 +38,3 @@ npm run dev
 
 The app will be running at [http://localhost:5173](http://localhost:5173).
 ---
-
