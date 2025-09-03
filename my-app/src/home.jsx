@@ -251,7 +251,7 @@ const Home = () => {
                 />
                 <p>{allProfiles[allUserWithStories[authorIndex]] ? allProfiles[allUserWithStories[authorIndex]][1] : null}</p>
                 <a
-                    href={allUsersStories[allUserWithStories[authorIndex]][index]}
+                    href={allUsersStories[allUserWithStories[authorIndex]] ? allUsersStories[allUserWithStories[authorIndex]][index] : null}
                     download="instagram-image"
                     target='_blank'
                     rel="noopener noreferrer"
