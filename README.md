@@ -11,6 +11,7 @@
    cd Instagram-Plus
    ```
 
+2. Server Env: Add a `.env` file inside the `server/` directory for access to database and cloud.
 
 ---
 
