@@ -68,6 +68,11 @@ a:hover {
 .feed-tabs {
     border-bottom: 1px solid #dbdbdb;
     margin-bottom: 16px;
+    position: sticky !important;
+    top: -20px !important;
+    background-color: white !important;
+    z-index: 1000 !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .feed-tabs button {
@@ -114,4 +119,295 @@ a:hover {
     font-size: 14px;
     color: #8e8e8e;
     margin: 0 0 16px 0;
+}
+
+/* Instagram-like Story Viewer Styles */
+.story-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.9);
+    z-index: 10000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.story-modal {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    max-width: 400px;
+    max-height: 100vh;
+    background: transparent;
+    border: none;
+    outline: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.story-viewer {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    background: #000;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* Story Progress Bars */
+.story-progress-container {
+    position: absolute;
+    top: 12px;
+    left: 8px;
+    right: 8px;
+    z-index: 10;
+    display: flex;
+    gap: 2px;
+    height: 2px;
+}
+
+.story-progress-bar {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 1px;
+    overflow: hidden;
+}
+
+.story-progress-fill {
+    height: 100%;
+    background: white;
+    transition: width 0.1s linear;
+    border-radius: 1px;
+}
+
+/* Story Header */
+.story-header {
+    position: absolute;
+    top: 20px;
+    left: 0;
+    right: 0;
+    z-index: 10;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.4), transparent);
+}
+
+.story-user-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.story-profile-pic {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid white;
+}
+
+.story-username {
+    color: white;
+    font-weight: 600;
+    font-size: 14px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.story-time {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 12px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.story-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.story-action-btn {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease;
+    text-decoration: none;
+    font-size: 16px;
+}
+
+.story-action-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Story Content */
+.story-content-wrapper {
+    position: relative;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.story-media-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.story-media {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    border-radius: 0;
+}
+
+/* Navigation Areas */
+.story-nav-area {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 50%;
+    z-index: 5;
+    cursor: pointer;
+}
+
+.story-nav-left {
+    left: 0;
+}
+
+.story-nav-right {
+    right: 0;
+}
+
+/* Navigation Arrows */
+.story-nav-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0, 0, 0, 0.3);
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 12px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    opacity: 0.7;
+    z-index: 10;
+}
+
+.story-nav-arrow:hover {
+    background: rgba(0, 0, 0, 0.5);
+    opacity: 1;
+    transform: translateY(-50%) scale(1.1);
+}
+
+.story-nav-arrow-left {
+    left: 16px;
+}
+
+.story-nav-arrow-right {
+    right: 16px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .story-modal {
+        max-width: 100%;
+        width: 100%;
+    }
+    
+    .story-header {
+        padding: 8px 12px;
+    }
+    
+    .story-nav-arrow {
+        padding: 8px;
+        opacity: 0.5;
+    }
+    
+    .story-nav-arrow-left {
+        left: 8px;
+    }
+    
+    .story-nav-arrow-right {
+        right: 8px;
+    }
+    
+    .story-progress-container {
+        top: 8px;
+        left: 4px;
+        right: 4px;
+    }
+}
+
+/* Animations */
+@keyframes storyFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.story-viewer {
+    animation: storyFadeIn 0.3s ease-out;
+}
+
+/* Story thumbnails improvement */
+.story {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin: 0 8px;
+    cursor: pointer;
+}
+
+.story-image {
+    width: 66px;
+    height: 66px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #e1306c;
+    transition: transform 0.2s ease;
+}
+
+.story-image:hover {
+    transform: scale(1.05);
+}
+
+.story p {
+    margin: 4px 0 0 0;
+    font-size: 12px;
+    color: #262626;
+    max-width: 70px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }

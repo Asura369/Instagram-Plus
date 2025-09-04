@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import './DiscoverUsers.css'
 import { API_ENDPOINTS } from '../config/api'
 
 const DiscoverUsers = () => {
+    const navigate = useNavigate()
     const [users, setUsers] = useState([])
     const [searchQuery, setSearchQuery] = useState('')
     const [searchResults, setSearchResults] = useState([])
@@ -98,6 +100,10 @@ const DiscoverUsers = () => {
         const isFollowing = isUserFollowed(user._id)
         const isOwnProfile = currentUser && user._id === currentUser._id
 
+        const handleUsernameClick = () => {
+            navigate(`/user/${user._id}`)
+        }
+
         return (
             <div className="user-card">
                 <div className="user-info">
@@ -107,7 +113,12 @@ const DiscoverUsers = () => {
                         className="user-avatar"
                     />
                     <div className="user-details">
-                        <h3>{user.username}</h3>
+                        <h3 
+                            className="clickable-username" 
+                            onClick={handleUsernameClick}
+                        >
+                            {user.username}
+                        </h3>
                         <p className="user-stats">
                             {user.followers?.length || 0} followers • {user.following?.length || 0} following
                         </p>

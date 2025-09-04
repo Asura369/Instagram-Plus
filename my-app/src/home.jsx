@@ -207,6 +207,35 @@ const Home = () => {
         const allUsersStories = storyList.storyList;
         const [index, setIndex] = useState(0);
         const [authorIndex, setAuthorIndex] = useState(allUserWithStories.indexOf(storyList.authorId));
+        const [progress, setProgress] = useState(0);
+        const [isPlaying, setIsPlaying] = useState(true);
+
+        const currentUser = allUserWithStories[authorIndex];
+        const currentStories = allUsersStories[currentUser] || [];
+        const currentStoryUrl = currentStories[index];
+        const userProfile = allProfiles[currentUser];
+
+        // Auto-progress timer
+        useEffect(() => {
+            if (!isPlaying) return;
+
+            const timer = setInterval(() => {
+                setProgress(prev => {
+                    if (prev >= 100) {
+                        nextStory();
+                        return 0;
+                    }
+                    return prev + 2; // 5 seconds total (100/2 = 50 intervals * 100ms = 5000ms)
+                });
+            }, 100);
+
+            return () => clearInterval(timer);
+        }, [index, authorIndex, isPlaying]);
+
+        // Reset progress when story changes
+        useEffect(() => {
+            setProgress(0);
+        }, [index, authorIndex]);
 
         const previousStory = () => {
             if (!storiesViewed.includes(allUserWithStories[authorIndex])) {
@@ -223,62 +252,140 @@ const Home = () => {
             } else {
                 setIndex((previousIndex) => (previousIndex - 1));
             }
+            setProgress(0);
         }
+
         const nextStory = () => {
             if (!storiesViewed.includes(allUserWithStories[authorIndex])) {
                 storiesViewed.push(allUserWithStories[authorIndex]);
                 updateViewedStories(allUserWithStories[authorIndex]);
             }
             if (index === allUsersStories[allUserWithStories[authorIndex]].length - 1) {
-                setIndex(0);
+                // Last story of current user
                 if (authorIndex === allUserWithStories.length - 1) {
-                    setAuthorIndex(0);
+                    // Last user, close the story viewer
+                    closeStorySlides();
+                    return;
                 } else {
+                    // Move to next user
+                    setIndex(0);
                     setAuthorIndex((previousAuthorIndex) => previousAuthorIndex + 1);
                 }
             } else {
+                // Move to next story of same user
                 setIndex((previousIndex) => (previousIndex + 1));
             }
+            setProgress(0);
         }
 
+        const handleStoryClick = (e) => {
+            const rect = e.currentTarget.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const centerX = rect.width / 2;
+            
+            if (clickX < centerX) {
+                previousStory();
+            } else {
+                nextStory();
+            }
+        };
+
+        const togglePlayPause = () => {
+            setIsPlaying(!isPlaying);
+        };
+
         return (
-            <div style={{display: "block"}}>
-                <img 
-                    key={allProfiles[allUserWithStories[authorIndex]] ? allProfiles[allUserWithStories[authorIndex]][0] + authorIndex : null}
-                    src={allProfiles[allUserWithStories[authorIndex]] ? allProfiles[allUserWithStories[authorIndex]][0] : null}
-                    alt="profile"
-                    style={{ width: 72, height: 72, borderRadius: '50%', objectFit: 'cover'}}
-                />
-                <p>{allProfiles[allUserWithStories[authorIndex]] ? allProfiles[allUserWithStories[authorIndex]][1] : null}</p>
-                <a
-                    href={allUsersStories[allUserWithStories[authorIndex]] ? allUsersStories[allUserWithStories[authorIndex]][index] : null}
-                    download="instagram-image"
-                    target='_blank'
-                    rel="noopener noreferrer"
-                    style={{
-                        background: "none", border: "none"
-                    }}>
-                        <BsDownload size={24}/>
-                </a>
-                <div className='slide-display'>
-                   {(allUserWithStories.length > 1) ? <button onClick={previousStory} 
-                        style={{
-                            background: "none", border: "none"
-                        }}>
-                        <BsChevronLeft size={24}/>
-                    </button> : <></>}
-                    <img
-                        key={currentStory + index}
-                        src={allUsersStories[allUserWithStories[authorIndex]] ? allUsersStories[allUserWithStories[authorIndex]][index] : null}
-                        alt='Story'
-                        style={{ width: "500px", height: "500px" }}
-                    />
-                    {(allUserWithStories.length > 1) ? <button onClick={nextStory} 
-                        style={{
-                            background: "none", border: "none"
-                        }}>
-                        <BsChevronRight size={24}/>
-                    </button> : <></>}
+            <div className="story-viewer">
+                {/* Story Progress Bars */}
+                <div className="story-progress-container">
+                    {currentStories.map((_, i) => (
+                        <div key={i} className="story-progress-bar">
+                            <div 
+                                className="story-progress-fill" 
+                                style={{
+                                    width: i < index ? '100%' : i === index ? `${progress}%` : '0%'
+                                }}
+                            />
+                        </div>
+                    ))}
+                </div>
+
+                {/* Story Header */}
+                <div className="story-header">
+                    <div className="story-user-info">
+                        <img 
+                            src={userProfile ? userProfile[0] : null}
+                            alt="profile"
+                            className="story-profile-pic"
+                        />
+                        <span className="story-username">
+                            {userProfile ? userProfile[1] : 'Unknown User'}
+                        </span>
+                        <span className="story-time">2h</span>
+                    </div>
+                    <div className="story-actions">
+                        <button 
+                            className="story-action-btn"
+                            onClick={togglePlayPause}
+                            title={isPlaying ? 'Pause' : 'Play'}
+                        >
+                            {isPlaying ? '⏸️' : '▶️'}
+                        </button>
+                        <a
+                            href={currentStoryUrl}
+                            download="instagram-story"
+                            target='_blank'
+                            rel="noopener noreferrer"
+                            className="story-action-btn"
+                            title="Download"
+                        >
+                            <BsDownload size={20}/>
+                        </a>
+                        <button 
+                            className="story-action-btn"
+                            onClick={closeStorySlides}
+                            title="Close"
+                        >
+                            ✕
+                        </button>
+                    </div>
+                </div>
+
+                {/* Story Content */}
+                <div className="story-content-wrapper">
+                    {/* Navigation Areas */}
+                    <div className="story-nav-area story-nav-left" onClick={previousStory} />
+                    <div className="story-nav-area story-nav-right" onClick={nextStory} />
+                    
+                    {/* Story Image/Video */}
+                    <div className="story-media-container" onClick={handleStoryClick}>
+                        <img
+                            src={currentStoryUrl}
+                            alt='Story'
+                            className="story-media"
+                            onLoad={() => setProgress(0)}
+                        />
+                    </div>
+
+                    {/* Navigation Arrows */}
+                    {allUserWithStories.length > 1 && (
+                        <>
+                            <button 
+                                className="story-nav-arrow story-nav-arrow-left" 
+                                onClick={previousStory}
+                                title="Previous story"
+                            >
+                                <BsChevronLeft size={24}/>
+                            </button>
+                            <button 
+                                className="story-nav-arrow story-nav-arrow-right" 
+                                onClick={nextStory}
+                                title="Next story"
+                            >
+                                <BsChevronRight size={24}/>
+                            </button>
+                        </>
+                    )}
                 </div>
             </div>
         )
@@ -286,32 +393,16 @@ const Home = () => {
 
     return (
         <div className='feed-container'>
-            <Modal isOpen={(showStorySlides[0])} onRequestClose={closeStorySlides} style={
-                    {content: {
-                        display: "flex",
-                        justifyContent: "center",
-                        textAlign: "center",
-                        alignContent: "center",
-                        width: "50%", 
-                        height: "100%",
-                        inset: "unset"
-                    },
-                    overlay: {
-                        display: "flex",
-                        backgroundColor: "rgba(0, 0, 0, 0.6)",
-                        textAlign: "center",
-                        justifyContent: "center",
-                        alignContent: "center",
-                        height: "100%",
-                        position: "fixed"
-                    },
-
-                }
-                }>
+            <Modal 
+                isOpen={(showStorySlides[0])} 
+                onRequestClose={closeStorySlides} 
+                className="story-modal"
+                overlayClassName="story-modal-overlay"
+                shouldCloseOnOverlayClick={true}
+                shouldCloseOnEsc={true}
+            >
                 {currentStory && (
-                    <div className='story-content'>
-                        <StorySlideShow storyList={{"storyList": stories, "authorId": showStorySlides[1]}}/>
-                    </div>
+                    <StorySlideShow storyList={{"storyList": stories, "authorId": showStorySlides[1]}}/>
                 )}
             </Modal>
 
@@ -321,27 +412,23 @@ const Home = () => {
             ) : (
                 <div style={{ display: 'flex', gap: 10, padding: '10px 6px', overflowX: 'auto', marginBottom: 16 }}>
                     {storiesProfile.map(s => (
-                        <div key={s._id}>
+                        <div key={s._id} className='story'>
                             <a onClick={e => {
                                 e.preventDefault()
                                 openStorySlides(s._id)
                                 updateViewedStories(s._id)
                             }}>
-                                <div className='story' style={{ flex: '0 0 auto' }}>
-                                    <img
-                                        src={s.profilePic}
-                                        alt='Story'
-                                        className='story-image'
-                                        style={{ width: 72, 
-                                            height: 72, 
-                                            borderRadius: '50%', 
-                                            objectFit: 'cover', 
-                                            border: storiesViewed.includes(s._id) ? "none" : '2px solid #e1306c' }}
-                                        ref={(element) => {
-                                            storyRef.current[s._id] = element
-                                        }}
-                                    />
-                                </div>
+                                <img
+                                    src={s.profilePic}
+                                    alt='Story'
+                                    className='story-image'
+                                    style={{ 
+                                        border: storiesViewed.includes(s._id) ? "2px solid #c7c7c7" : '2px solid #e1306c' 
+                                    }}
+                                    ref={(element) => {
+                                        storyRef.current[s._id] = element
+                                    }}
+                                />
                             </a>
                             <p>{s.username}</p>
                         </div>
@@ -355,9 +442,10 @@ const Home = () => {
                 borderBottom: '1px solid #dbdbdb',
                 marginBottom: '16px',
                 position: 'sticky',
-                top: '0',
+                top: '-20px',
                 backgroundColor: 'white',
-                zIndex: 10
+                zIndex: 1000,
+                boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
             }}>
                 <button
                     onClick={() => setActiveTab('following')}

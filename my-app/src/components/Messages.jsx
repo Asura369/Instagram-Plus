@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { io } from 'socket.io-client'
 import './Messages.css'
@@ -21,6 +22,7 @@ const Messages = () => {
     const textareaRef = useRef(null)
     const editTextareaRef = useRef(null)
     const messagesEndRef = useRef(null)
+    const navigate = useNavigate()
 
     const token = localStorage.getItem('token')
 
@@ -271,33 +273,111 @@ const Messages = () => {
     return (
         <div className="messages-container">
             <div className="sidebar">
-                <h3>Conversations</h3>
-                <button className="new-message-button" onClick={() => fetchFollowUsers(currentUserId)}>
-                    New Message
-                </button>
+                <div className="sidebar-header">
+                    <h2 className="sidebar-title">Direct</h2>
+                    <button 
+                        className="new-message-btn" 
+                        onClick={() => fetchFollowUsers(currentUserId)}
+                        title="New message"
+                    >
+                        <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
+                            <path d="M12.202 3.203H5.25a3 3 0 00-3 3V18a3 3 0 003 3h9.75a3 3 0 003-3V9.75a3 3 0 00-3-3h-6.75z"></path>
+                            <path d="M14.25 3v4.5a1.5 1.5 0 01-1.5 1.5H9V3h5.25z"></path>
+                        </svg>
+                    </button>
+                </div>
 
-                {conversations.map((conv) => {
-                    if (!currentUserId) return
-                    const otherUser = conv.participants.find((p) => p._id !== currentUserId)
-                    return (
-                        <div
-                            key={conv._id}
-                            className={`conversation ${selectedConv?._id === conv._id ? 'active' : ''}`}
-                            onClick={() => setSelectedConv(conv)}
+                <div className="conversations-header">
+                    <span>Messages</span>
+                    {conversations.length > 0 && (
+                        <button 
+                            className="new-message-button" 
+                            onClick={() => fetchFollowUsers(currentUserId)}
                         >
-                            {otherUser?.username || 'Unknown'}
+                            ✏️
+                        </button>
+                    )}
+                </div>
+
+                <div className="conversations-list">
+                    {conversations.map((conv) => {
+                        if (!currentUserId) return null
+                        const otherUser = conv.participants.find((p) => p._id !== currentUserId)
+                        return (
+                            <div
+                                key={conv._id}
+                                className={`conversation ${selectedConv?._id === conv._id ? 'active' : ''}`}
+                                onClick={() => setSelectedConv(conv)}
+                            >
+                                <img 
+                                    src={otherUser?.profilePic || 'https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png'}
+                                    alt={`${otherUser?.username} profile`}
+                                    className="conversation-avatar"
+                                />
+                                <div className="conversation-info">
+                                    <div className="conversation-name">
+                                        {otherUser?.username || 'Unknown'}
+                                    </div>
+                                    <div className="conversation-preview">
+                                        {conv.lastMessage ? conv.lastMessage.text?.slice(0, 30) + '...' : 'Start a conversation'}
+                                    </div>
+                                </div>
+                                <div className="conversation-time">
+                                    {conv.lastMessage && new Date(conv.lastMessage.createdAt).toLocaleDateString()}
+                                </div>
+                            </div>
+                        )
+                    })}
+
+                    {conversations.length === 0 && (
+                        <div className="no-conversations">
+                            <div className="no-conversations-icon">💬</div>
+                            <h3>Your messages</h3>
+                            <p>Send private photos and messages to a friend or group.</p>
+                            <button 
+                                className="send-message-btn" 
+                                onClick={() => fetchFollowUsers(currentUserId)}
+                            >
+                                Send message
+                            </button>
                         </div>
-                    )
-                })}
+                    )}
+                </div>
 
                 {showNewMsgModal && (
                     <div className="new-message-modal">
-                        <h4>Select a user to message</h4>
-                        {usersList.map((user) => (
-                            <div key={user._id} className="conversation" onClick={() => startConversation(user._id)}>
-                                {user.username}
-                            </div>
-                        ))}
+                        <div className="modal-header">
+                            <h3>New message</h3>
+                            <button 
+                                className="close-modal-btn"
+                                onClick={() => setShowNewMsgModal(false)}
+                            >
+                                ✕
+                            </button>
+                        </div>
+                        <div className="user-search">
+                            <input type="text" placeholder="Search..." className="search-input" />
+                        </div>
+                        <div className="suggested-label">Suggested</div>
+                        <div className="users-list">
+                            {usersList.map((user) => (
+                                <div 
+                                    key={user._id} 
+                                    className="user-item" 
+                                    onClick={() => startConversation(user._id)}
+                                >
+                                    <img 
+                                        src={user.profilePic || 'https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png'}
+                                        alt={`${user.username} profile`}
+                                        className="user-avatar"
+                                    />
+                                    <div className="user-info">
+                                        <div className="user-name">{user.username}</div>
+                                        <div className="user-status">Active recently</div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 )}
             </div>
@@ -309,7 +389,12 @@ const Messages = () => {
                             {selectedConv.participants
                                 .filter((p) => p._id !== currentUserId)
                                 .map((user) => (
-                                    <div key={user._id} className="chat-user-info">
+                                    <div 
+                                        key={user._id} 
+                                        className="chat-user-info"
+                                        onClick={() => navigate(`/user/${user._id}`)}
+                                        style={{ cursor: 'pointer' }}
+                                    >
                                         <img
                                             src={user.profilePic || 'https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png'}
                                             alt={`${user.username} profile`}
@@ -317,102 +402,122 @@ const Messages = () => {
                                         />
                                         <div className="chat-user-details">
                                             <div className="chat-username">{user.username}</div>
+                                            <div className="chat-user-status">Active recently</div>
                                         </div>
                                     </div>
                                 ))}
                         </div>
 
                         <div className="messages-list">
-                            {messages.map((msg) => (
-                                <div
-                                    key={msg._id}
-                                    className={`message ${msg.sender?._id === currentUserId || msg.sender === currentUserId
-                                        ? 'sent'
-                                        : 'received'
-                                        }`}
-                                >
-                                    <div className="message-header">
-                                        <span className="timestamp">
-                                            {new Date(msg.createdAt).toLocaleString(undefined, {
-                                                month: 'short',
-                                                day: 'numeric',
-                                                hour: '2-digit',
-                                                minute: '2-digit',
-                                                hour12: true,
-                                            })}
-                                        </span>
-                                        {msg.edited && <span className="edited">(edited)</span>}
-                                    </div>
-
-                                    {editingMessageId === msg._id ? (
-                                        <div className="edit-area">
-                                            <textarea
-                                                ref={editTextareaRef}
-                                                value={editText}
-                                                onChange={(e) => {
-                                                    const value = e.target.value
-                                                    const numNewlines = (value.match(/\n/g) || []).length
-                                                    if (value.length <= maxChars && numNewlines <= maxNewlines) {
-                                                        setEditText(value)
-                                                    }
-                                                }}
-                                                rows={1}
-                                                maxLength={maxChars}
-                                                placeholder="Edit your message..."
-                                                onKeyDown={(e) => {
-                                                    if (e.key === 'Enter' && !e.shiftKey) {
-                                                        e.preventDefault()
-                                                        saveEdit()
-                                                    }
-                                                }}
-                                                className="edit-textarea"
+                            {messages.map((msg, index) => {
+                                const isOwn = msg.sender?._id === currentUserId || msg.sender === currentUserId
+                                const showAvatar = !isOwn && (index === 0 || messages[index - 1]?.sender?._id !== msg.sender?._id)
+                                
+                                return (
+                                    <div
+                                        key={msg._id}
+                                        className={`message ${isOwn ? 'sent' : 'received'}`}
+                                    >
+                                        {showAvatar && (
+                                            <img 
+                                                src={selectedConv.participants.find(p => p._id !== currentUserId)?.profilePic || 'https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png'}
+                                                alt="Profile"
+                                                className="message-avatar"
                                             />
-                                            <div className="input-limits">
-                                                {editText.length}/{maxChars} characters
-                                            </div>
-                                            <button onClick={saveEdit}>Save</button>
-                                            <button onClick={() => setEditingMessageId(null)}>Cancel</button>
-                                        </div>
-                                    ) : (
-                                        <>
-                                            <div className="message-text" style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
-                                                {msg.text}
-                                            </div>
-                                            {(msg.sender === currentUserId || msg.sender?._id === currentUserId) && (
-                                                <div className="message-actions">
-                                                    <button onClick={() => startEdit(msg)}>Edit</button>
-                                                    <button onClick={() => deleteMessage(msg._id)}>Delete</button>
+                                        )}
+                                        
+                                        <div className="message-content">
+                                            {editingMessageId === msg._id ? (
+                                                <div className="edit-area">
+                                                    <textarea
+                                                        ref={editTextareaRef}
+                                                        value={editText}
+                                                        onChange={(e) => {
+                                                            const value = e.target.value
+                                                            const numNewlines = (value.match(/\n/g) || []).length
+                                                            if (value.length <= maxChars && numNewlines <= maxNewlines) {
+                                                                setEditText(value)
+                                                            }
+                                                        }}
+                                                        rows={1}
+                                                        maxLength={maxChars}
+                                                        placeholder="Edit your message..."
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === 'Enter' && !e.shiftKey) {
+                                                                e.preventDefault()
+                                                                saveEdit()
+                                                            }
+                                                        }}
+                                                        className="edit-textarea"
+                                                    />
+                                                    <div className="edit-actions">
+                                                        <button onClick={saveEdit} className="save-btn">Save</button>
+                                                        <button onClick={() => setEditingMessageId(null)} className="cancel-btn">Cancel</button>
+                                                    </div>
                                                 </div>
+                                            ) : (
+                                                <>
+                                                    <div className="message-bubble">
+                                                        <div className="message-text">
+                                                            {msg.text}
+                                                        </div>
+                                                        {msg.edited && <div className="edited-indicator">edited</div>}
+                                                    </div>
+                                                    <div className="message-info">
+                                                        <span className="timestamp">
+                                                            {new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                                        </span>
+                                                        {isOwn && (
+                                                            <div className="message-actions">
+                                                                <button onClick={() => startEdit(msg)} className="action-btn">Edit</button>
+                                                                <button onClick={() => deleteMessage(msg._id)} className="action-btn">Delete</button>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </>
                                             )}
-                                        </>
-                                    )}
-                                </div>
-                            ))}
+                                        </div>
+                                    </div>
+                                )
+                            })}
                             <div ref={messagesEndRef} />
                         </div>
 
                         <div className="input-area">
-                            <textarea
-                                ref={textareaRef}
-                                value={newMessage}
-                                onChange={handleChange}
-                                onKeyDown={handleKeyDown}
-                                placeholder="Type a message..."
-                                rows={1}
-                                className="message-textarea"
-                                maxLength={maxChars}
-                                style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}
-                            />
-                            <div className="input-limits">
-                                {newMessage.length}/{maxChars} characters
+                            <div className="input-container">
+                                <textarea
+                                    ref={textareaRef}
+                                    value={newMessage}
+                                    onChange={handleChange}
+                                    onKeyDown={handleKeyDown}
+                                    placeholder="Message..."
+                                    rows={1}
+                                    className="message-textarea"
+                                    maxLength={maxChars}
+                                />
+                                <button 
+                                    onClick={sendMessage}
+                                    className="send-btn"
+                                    disabled={!newMessage.trim()}
+                                >
+                                    Send
+                                </button>
                             </div>
-                            <button onClick={sendMessage}>Send</button>
                         </div>
                     </>
                 ) : (
-                    <div className="no-conversation">Select or start a conversation</div>
+                    <div className="no-conversation">
+                        <div className="direct-icon">📩</div>
+                        <h2>Your messages</h2>
+                        <p>Send private photos and messages to a friend or group.</p>
+                        <button 
+                            className="send-message-btn" 
+                            onClick={() => fetchFollowUsers(currentUserId)}
+                        >
+                            Send message
+                        </button>
+                    </div>
                 )}
-
             </div>
         </div>
     )
