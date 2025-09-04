@@ -6,6 +6,7 @@ import dotenv from 'dotenv'
 import compression from 'compression'
 import http from 'http'
 import { Server as SocketIOServer } from 'socket.io'
+import validateEnvironment from './utils/validateEnv.js'
 
 import authRoutes from './routes/auth.js'
 import postRoutes from './routes/posts.js'
@@ -16,6 +17,9 @@ import messageRoutes from './routes/messages.js'
 
 const app = express()
 dotenv.config()
+
+// Validate environment variables
+validateEnvironment();
 
 const allowedOrigins = [
     'http://localhost:5173',
@@ -35,11 +39,12 @@ const io = new SocketIOServer(server, {
                 callback(new Error('Not allowed by CORS'))
             }
         },
-        methods: ['GET', 'POST', 'PATCH', 'DELETE'],
+        methods: ['GET', 'POST', 'PATCH', 'DELETE', 'PUT', 'OPTIONS'],
+        credentials: true
     },
 })
 
-// Middleware
+// Enhanced CORS middleware for production
 app.use(cors({
     origin: function (origin, callback) {
         if (!origin || allowedOrigins.includes(origin)) {
@@ -50,7 +55,21 @@ app.use(cors({
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token', 'Origin', 'X-Requested-With', 'Accept']
+    allowedHeaders: [
+        'Content-Type', 
+        'Authorization', 
+        'x-auth-token', 
+        'Origin', 
+        'X-Requested-With', 
+        'Accept',
+        'Access-Control-Allow-Origin',
+        'Access-Control-Allow-Credentials',
+        'Access-Control-Allow-Headers',
+        'Access-Control-Allow-Methods'
+    ],
+    exposedHeaders: ['Content-Range', 'X-Content-Range'],
+    preflightContinue: false,
+    optionsSuccessStatus: 204
 }))
 
 app.use(compression())
@@ -67,6 +86,52 @@ app.use((req, res, next) => {
 // Test route
 app.get('/test', (req, res) => {
     res.json({ message: 'Server is working!' })
+})
+
+// Image proxy route to handle CORS issues
+app.get('/proxy-image', async (req, res) => {
+    try {
+        const { url } = req.query;
+        if (!url) {
+            return res.status(400).json({ error: 'URL parameter is required' });
+        }
+
+        // Validate URL to prevent SSRF attacks
+        const allowedDomains = [
+            'res.cloudinary.com',
+            'upload.wikimedia.org',
+            'images.unsplash.com',
+            'via.placeholder.com'
+        ];
+
+        const urlObj = new URL(url);
+        if (!allowedDomains.some(domain => urlObj.hostname.includes(domain))) {
+            return res.status(403).json({ error: 'Domain not allowed' });
+        }
+
+        const response = await fetch(url);
+        if (!response.ok) {
+            return res.status(response.status).json({ error: 'Failed to fetch image' });
+        }
+
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.startsWith('image/')) {
+            return res.status(400).json({ error: 'URL does not point to an image' });
+        }
+
+        // Set appropriate headers
+        res.set({
+            'Content-Type': contentType,
+            'Cache-Control': 'public, max-age=86400', // Cache for 24 hours
+            'Access-Control-Allow-Origin': '*'
+        });
+
+        // Pipe the image data
+        response.body.pipe(res);
+    } catch (error) {
+        console.error('Image proxy error:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
 })
 
 app.use('/auth', authRoutes)
@@ -125,7 +190,7 @@ io.on('connection', (socket) => {
     })
 })
 
-const PORT = process.env.PORT || 5001
+const PORT = process.env.PORT || 5000
 
 mongoose.connect(process.env.CONNECTION_URL)
     .then(() => {

@@ -181,6 +181,23 @@ function Stories() {
         } catch (error) {
             console.error('AI generation failed:', error)
             
+            // Provide more detailed error messages
+            let errorMessage = 'AI generation failed. Please try again.';
+            
+            if (error.response?.status === 500) {
+                errorMessage = 'Server error during AI generation. Please check your internet connection and try again.';
+            } else if (error.response?.status === 503) {
+                errorMessage = 'AI service is temporarily unavailable. Please try again later.';
+            } else if (error.response?.status === 502) {
+                errorMessage = 'External AI service error. Please try again in a few moments.';
+            } else if (error.response?.data?.message) {
+                errorMessage = error.response.data.message;
+            } else if (error.message.includes('Network Error')) {
+                errorMessage = 'Network error. Please check your internet connection.';
+            }
+            
+            setStatus(errorMessage);
+            
             // Fallback: Create a mock generated image for demo purposes
             setGeneratedImage({
                 src: userPhoto.preview, // Use user photo as fallback
@@ -188,7 +205,11 @@ function Stories() {
                 publicId: null,
                 isMockGenerated: true
             })
-            setStatus(`Mock AI generation complete (Theme: ${themes.find(t => t.id === selectedTheme)?.name})`)
+            
+            // Show fallback message after a delay
+            setTimeout(() => {
+                setStatus(`Mock AI generation complete (Theme: ${themes.find(t => t.id === selectedTheme)?.name}) - Using fallback due to error`)
+            }, 2000);
         } finally {
             setIsGenerating(false)
         }

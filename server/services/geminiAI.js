@@ -22,12 +22,22 @@ function fileToGenerativePart(buffer, mimeType) {
 // Generate AI image with Gemini
 export async function generateAIStory(userPhotoBuffer, theme, customPrompt = null) {
     try {
+        console.log('=== Gemini AI Generation Start ===');
+        
         if (!process.env.GEMINI_API_KEY) {
             throw new Error('GEMINI_API_KEY environment variable is required');
         }
 
+        if (!userPhotoBuffer || userPhotoBuffer.length === 0) {
+            throw new Error('User photo buffer is empty or invalid');
+        }
+
+        console.log('User photo buffer size:', userPhotoBuffer.length);
+        console.log('Theme:', theme);
+
         // Get the appropriate model for image generation
         const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-image-preview" });
+        console.log('Gemini model initialized');
 
         // Define theme-specific prompts
         const themePrompts = {
@@ -55,12 +65,21 @@ export async function generateAIStory(userPhotoBuffer, theme, customPrompt = nul
         const imagePart = fileToGenerativePart(userPhotoBuffer, 'image/jpeg');
 
         console.log('Generating AI image with Gemini...');
-        console.log('Theme:', theme);
-        console.log('Prompt:', prompt);
+        console.log('Prompt length:', prompt.length);
 
-        // Generate content with Gemini Image Generation
-        const result = await model.generateContent([prompt, imagePart]);
+        // Add timeout and retry logic
+        const generateWithTimeout = async (timeoutMs = 30000) => {
+            return Promise.race([
+                model.generateContent([prompt, imagePart]),
+                new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error('Gemini API timeout')), timeoutMs)
+                )
+            ]);
+        };
+
+        const result = await generateWithTimeout();
         const response = await result.response;
+        console.log('Gemini response received');
 
         // Check if the response contains generated images
         const candidates = response.candidates;
@@ -103,8 +122,25 @@ export async function generateAIStory(userPhotoBuffer, theme, customPrompt = nul
         };
 
     } catch (error) {
-        console.error('Gemini AI Error:', error);
-        throw new Error(`AI generation failed: ${error.message}`);
+        console.error('=== Gemini AI Error ===');
+        console.error('Error type:', error.name);
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
+        
+        // Provide more specific error messages
+        if (error.message.includes('API key')) {
+            throw new Error('Invalid or missing Gemini API key');
+        } else if (error.message.includes('timeout')) {
+            throw new Error('Gemini AI service timeout - please try again');
+        } else if (error.message.includes('quota')) {
+            throw new Error('Gemini API quota exceeded');
+        } else if (error.message.includes('safety')) {
+            throw new Error('Image content was blocked by safety filters');
+        } else if (error.message.includes('network') || error.message.includes('fetch')) {
+            throw new Error('Network error connecting to Gemini AI');
+        } else {
+            throw new Error(`AI generation failed: ${error.message}`);
+        }
     }
 }
 

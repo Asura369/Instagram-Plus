@@ -4,7 +4,7 @@ const isDevelopment = import.meta.env.MODE === 'development' ||
     window.location.hostname === 'localhost';
 
 export const API_BASE_URL = isDevelopment
-    ? 'http://localhost:5001'
+    ? 'http://localhost:5000'
     : 'https://instaplus.up.railway.app';
 
 // Helper function to create full API URLs
@@ -49,8 +49,9 @@ export const API_ENDPOINTS = {
     uploadMedia: createApiUrl('upload/media'),
     uploadVideo: createApiUrl('upload/video'),
     generateStoryImage: createApiUrl('upload/generate-story'),
+    proxyImage: (imageUrl) => createApiUrl(`proxy-image?url=${encodeURIComponent(imageUrl)}`),
     
-    // MongoDB Image endpoints
+    // MongoDB Image endpoints (deprecated - now using Cloudinary)
     getImage: (imageId) => createApiUrl(`upload/images/${imageId}`),
     getImageMetadata: (imageId) => createApiUrl(`upload/images/${imageId}/metadata`),
     deleteImage: (imageId) => createApiUrl(`upload/images/${imageId}`),

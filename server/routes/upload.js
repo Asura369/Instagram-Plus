@@ -66,19 +66,46 @@ router.delete('/media', auth, async (req, res) => {
 // AI Story Image Generation Endpoint
 router.post('/generate-story', auth, upload.single('userPhoto'), async (req, res) => {
     try {
+        console.log('=== AI Generation Request ===');
+        console.log('User ID:', req.userId);
+        console.log('Body:', req.body);
+        console.log('File:', req.file ? 'Present' : 'Missing');
+
         const { theme, prompt } = req.body
         const userPhoto = req.file
 
         if (!userPhoto) {
+            console.error('No user photo provided');
             return res.status(400).json({ message: 'User photo is required' })
         }
 
         if (!theme) {
+            console.error('No theme provided');
             return res.status(400).json({ message: 'Theme is required' })
         }
 
+        // Check environment variables
+        if (!process.env.GEMINI_API_KEY) {
+            console.error('GEMINI_API_KEY not configured');
+            return res.status(500).json({ 
+                message: 'AI service not configured',
+                error: 'GEMINI_API_KEY missing'
+            });
+        }
+
+        if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+            console.error('Cloudinary not configured');
+            return res.status(500).json({ 
+                message: 'Cloud storage not configured',
+                error: 'Cloudinary configuration missing'
+            });
+        }
+
+        console.log('Uploading user photo to Cloudinary...');
+        
         // Upload user photo to Cloudinary first
         const userPhotoResult = await uploadToCloudinary(userPhoto.buffer, 'instagram_plus/user_photos')
+        console.log('User photo uploaded:', userPhotoResult.secure_url);
         
         // REAL Gemini AI Image Generation
         let aiResult = null;
@@ -200,10 +227,38 @@ router.post('/generate-story', auth, upload.single('userPhoto'), async (req, res
         }
 
     } catch (error) {
-        console.error('AI generation error:', error)
-        res.status(500).json({ 
-            message: 'AI generation failed',
-            error: error.message 
+        console.error('=== AI Generation Error ===');
+        console.error('Error type:', error.name);
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
+        console.error('User ID:', req.userId);
+        console.error('Theme:', req.body?.theme);
+        console.error('Has file:', !!req.file);
+        
+        // Determine specific error type and message
+        let errorMessage = 'AI generation failed';
+        let statusCode = 500;
+        
+        if (error.message.includes('GEMINI_API_KEY')) {
+            errorMessage = 'AI service configuration error';
+            statusCode = 503;
+        } else if (error.message.includes('Cloudinary')) {
+            errorMessage = 'Cloud storage error';
+            statusCode = 503;
+        } else if (error.message.includes('Request failed')) {
+            errorMessage = 'External service error';
+            statusCode = 502;
+        }
+        
+        res.status(statusCode).json({ 
+            message: errorMessage,
+            error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
+            debug: process.env.NODE_ENV === 'development' ? {
+                stack: error.stack,
+                userId: req.userId,
+                theme: req.body?.theme,
+                hasFile: !!req.file
+            } : undefined
         })
     }
 })
