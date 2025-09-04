@@ -2,16 +2,10 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { API_ENDPOINTS } from '../config/api'
+import './Stories.css'
 
 const Spinner = () => (
-    <div style={{
-        width: 64,
-        height: 64,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        margin: '0 auto'
-    }}>
+    <div className="stories-loading-spinner">
         <svg viewBox='0 0 50 50' style={{ width: '100%', height: '100%' }} aria-label='Loading'>
             <circle cx='25' cy='25' r='20' stroke='#fff' strokeWidth='5' fill='none' opacity='0.2' />
             <path fill='none' stroke='#fff' strokeWidth='5' d='M25 5 a20 20 0 0 1 0 40'>
@@ -168,69 +162,72 @@ function Stories() {
     }, [submitted])
 
     return (
-        <div style={{ maxWidth: 560, margin: '0 auto', padding: 20 }}>
-            <h1>Create New Story</h1>
+        <div className="stories-container">
+            <div className="stories-card">
+                <h1 className="stories-title">Create New Story</h1>
 
-            <div
-                ref={pasteZoneRef}
-                onPaste={handlePaste}
-                tabIndex={uploading ? -1 : 0}
-                style={{
-                    border: '2px dashed #ccc',
-                    borderRadius: 8,
-                    padding: 16,
-                    marginBottom: 12,
-                    outline: 'none',
-                    opacity: uploading ? 0.6 : 1,
-                    pointerEvents: uploading ? 'none' : 'auto',
-                    userSelect: 'none'
-                }}
-                role='button'
-                aria-label={uploading ? 'Uploading, paste disabled' : 'Paste image/video here'}
-            >
-                {uploading
-                    ? 'Uploading… please wait'
-                    : 'Press Ctrl/Cmd+V to paste an image/video, or use the file selector below'}
-            </div>
+                <div
+                    ref={pasteZoneRef}
+                    onPaste={handlePaste}
+                    tabIndex={uploading ? -1 : 0}
+                    className={`stories-paste-zone ${uploading ? 'uploading' : ''}`}
+                    role='button'
+                    aria-label={uploading ? 'Uploading, paste disabled' : 'Paste image/video here'}
+                >
+                    {uploading
+                        ? 'Uploading… please wait'
+                        : 'Press Ctrl/Cmd+V to paste an image/video, or use the file selector below'}
+                </div>
 
-            <form onSubmit={handleSubmit}>
-                <input
-                    ref={fileInputRef}
-                    type='file'
-                    accept='image/*,video/*'
-                    onChange={handleStoryChange}
-                    disabled={uploading}
-                    style={{ display: 'block', marginBottom: 10, opacity: uploading ? 0.6 : 1 }}
-                    required={!media}
-                />
+                <form onSubmit={handleSubmit}>
+                    <input
+                        ref={fileInputRef}
+                        type='file'
+                        accept='image/*,video/*'
+                        onChange={handleStoryChange}
+                        disabled={uploading}
+                        className="stories-file-input"
+                        required={!media}
+                    />
 
-                {media && (
-                    <div style={{ marginTop: 10, maxHeight: 360, overflow: 'hidden', position: 'relative', background: '#000', borderRadius: 8 }}>
-                        {media.uploading ? (
-                            <div style={{ width: '100%', height: 360, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                <Spinner />
-                            </div>
-                        ) : media.kind === 'video' ? (
-                            <video src={media.src} controls style={{ width: '100%', height: 360, objectFit: 'contain', display: 'block' }} />
-                        ) : (
-                            <img src={media.src} alt='preview' style={{ width: '100%', height: 360, objectFit: 'contain', display: 'block' }} />
+                    {media && (
+                        <div className="stories-media-preview">
+                            {media.uploading ? (
+                                <div className="stories-loading-container">
+                                    <Spinner />
+                                    <div className="stories-loading-text">Uploading media...</div>
+                                </div>
+                            ) : media.kind === 'video' ? (
+                                <video src={media.src} controls />
+                            ) : (
+                                <img src={media.src} alt='preview' />
+                            )}
+                        </div>
+                    )}
+
+                    <div className="stories-button-container">
+                        <button 
+                            type='submit' 
+                            className="stories-post-btn"
+                            disabled={uploading || !media || media.uploading}
+                        >
+                            {uploading ? 'Uploading…' : 'Post Story'}
+                        </button>
+                        {media && (
+                            <button 
+                                type='button' 
+                                className="stories-remove-btn"
+                                onClick={clearMedia} 
+                                disabled={uploading}
+                            >
+                                Remove
+                            </button>
                         )}
                     </div>
-                )}
+                </form>
 
-                <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
-                    <button type='submit' disabled={uploading || !media || media.uploading}>
-                        {uploading ? 'Uploading…' : 'Post Story'}
-                    </button>
-                    {media && (
-                        <button type='button' onClick={clearMedia} disabled={uploading}>
-                            Remove
-                        </button>
-                    )}
-                </div>
-            </form>
-
-            {status && <div style={{ marginTop: 10, fontSize: 12, color: '#666' }}>{status}</div>}
+                {status && <div className="stories-status-message">{status}</div>}
+            </div>
         </div>
     )
 }

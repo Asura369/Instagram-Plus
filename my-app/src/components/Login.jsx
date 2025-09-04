@@ -29,30 +29,32 @@ const Login = ({ setIsLoggedIn }) => {
     }
 
     return (
-        <div className="login-container">
-            <h2>Login</h2>
-            <form onSubmit={handleSubmit}>
-                <input
-                    type="email"
-                    placeholder="Email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                />
-                <input
-                    type="password"
-                    placeholder="Password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                />
-                <button type="submit">Login</button>
-            </form>
+        <div className="login-page">
+            <div className="login-container">
+                <img src="/logoo.png" alt="Instagram Plus Logo" className="auth-logo" />
+                <form onSubmit={handleSubmit}>
+                    <input
+                        type="email"
+                        placeholder="Email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                    />
+                    <input
+                        type="password"
+                        placeholder="Password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                    />
+                    <button type="submit">Login</button>
+                </form>
 
-            <p>
-                Don't have an account?{' '}
-                <Link to="/signup" className="signup-link">Sign up here</Link>
-            </p>
+                <p>
+                    Don't have an account?{' '}
+                    <Link to="/signup" className="signup-link">Sign up here</Link>
+                </p>
+            </div>
         </div>
     )
 }

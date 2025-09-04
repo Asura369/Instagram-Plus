@@ -2,18 +2,12 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { API_ENDPOINTS } from '../config/api'
+import './Create.css'
 
 const MAX_MEDIA = 5
 
 const Spinner = () => (
-    <div style={{
-        width: 64,
-        height: 64,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        margin: '0 auto'
-    }}>
+    <div className="loading-spinner">
         <svg viewBox='0 0 50 50' style={{ width: '100%', height: '100%' }} aria-label='Loading'>
             <circle cx='25' cy='25' r='20' stroke='#fff' strokeWidth='5' fill='none' opacity='0.2' />
             <path fill='none' stroke='#fff' strokeWidth='5' d='M25 5 a20 20 0 0 1 0 40'>
@@ -258,153 +252,127 @@ const CreatePost = () => {
     const cur = media[current]
 
     return (
-        <div style={{ maxWidth: 560, margin: '0 auto', padding: 20 }}>
-            <h2>Create New Post</h2>
+        <div className="create-post-container">
+            <div className="create-post-card">
+                <h2 className="create-post-title">Create New Post</h2>
 
-            <div
-                ref={pasteZoneRef}
-                onPaste={handlePaste}
-                tabIndex={isUploading ? -1 : 0}
-                style={{
-                    border: '2px dashed #ccc',
-                    borderRadius: 8,
-                    padding: 16,
-                    marginBottom: 12,
-                    outline: 'none',
-                    opacity: isUploading ? 0.6 : 1,
-                    pointerEvents: isUploading ? 'none' : 'auto',
-                    userSelect: 'none'
-                }}
-                role='button'
-                aria-label={isUploading ? 'Uploading, paste disabled' : 'Paste media here'}
-            >
-                {isUploading
-                    ? 'Uploading… please wait'
-                    : 'Press Ctrl/Cmd+V to paste an image/video, or use the file selector below'}
-            </div>
+                <div
+                    ref={pasteZoneRef}
+                    onPaste={handlePaste}
+                    tabIndex={isUploading ? -1 : 0}
+                    className={`paste-zone ${isUploading ? 'uploading' : ''}`}
+                    role='button'
+                    aria-label={isUploading ? 'Uploading, paste disabled' : 'Paste media here'}
+                >
+                    {isUploading
+                        ? 'Uploading… please wait'
+                        : 'Press Ctrl/Cmd+V to paste an image/video, or use the file selector below'}
+                </div>
 
-            <form onSubmit={handleSubmit}>
-                <input
-                    ref={fileInputRef}
-                    type='file'
-                    accept='image/*,video/*'
-                    multiple
-                    onChange={handleFileChange}
-                    disabled={isUploading}
-                    style={{ display: 'block', marginBottom: 10, opacity: isUploading ? 0.6 : 1 }}
-                />
+                <form onSubmit={handleSubmit}>
+                    <input
+                        ref={fileInputRef}
+                        type='file'
+                        accept='image/*,video/*'
+                        multiple
+                        onChange={handleFileChange}
+                        disabled={isUploading}
+                        className="file-input"
+                    />
 
-                {media.length > 0 && (
-                    <div style={{ marginTop: 10 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                            {current > 0 && (
-                                <button type='button' onClick={() => setCurrent(c => Math.max(0, c - 1))}>
-                                    ‹
-                                </button>
-                            )}
-                            <div style={{ flex: 1, textAlign: 'center' }}>{current + 1} / {media.length}</div>
-                            {current < media.length - 1 && (
-                                <button type='button' onClick={() => setCurrent(c => Math.min(media.length - 1, c + 1))}>
-                                    ›
-                                </button>
-                            )}
-                            <button type='button' onClick={() => removeAt(current)} disabled={media[current]?.uploading}>
-                                Remove
-                            </button>
-                        </div>
-
-                        <div style={{ background: '#000', borderRadius: 8, height: 360, overflow: 'hidden' }}>
-                            {cur?.uploading ? (
-                                <div style={{ width: '100%', height: 360, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                    <Spinner />
-                                </div>
-                            ) : cur?.kind === 'video' ? (
-                                <video src={cur.src} controls style={{ display: 'block', width: '100%', height: 360, objectFit: 'contain' }} />
-                            ) : (
-                                <img src={cur?.src} alt='preview' style={{ display: 'block', width: '100%', height: 360, objectFit: 'contain' }} />
-                            )}
-                        </div>
-
-                        <div style={{ display: 'flex', gap: 8, overflowX: 'auto', marginTop: 8 }}>
-                            {media.map((m, i) => (
-                                <div
-                                    key={m.publicId || `ph-${i}`}
-                                    onClick={() => setCurrent(i)}
-                                    style={{
-                                        border: i === current ? '2px solid #333' : '1px solid #ddd',
-                                        borderRadius: 6,
-                                        padding: 2,
-                                        cursor: 'pointer',
-                                        minWidth: 64,
-                                        opacity: m.uploading ? 0.6 : 1
-                                    }}
-                                    title={m.kind === 'video' ? (m.name || 'video') : undefined}
+                    {media.length > 0 && (
+                        <div>
+                            <div className="media-controls">
+                                {current > 0 && (
+                                    <button 
+                                        type='button' 
+                                        className="media-nav-btn"
+                                        onClick={() => setCurrent(c => Math.max(0, c - 1))}
+                                    >
+                                        ‹
+                                    </button>
+                                )}
+                                <div className="media-counter">{current + 1} / {media.length}</div>
+                                {current < media.length - 1 && (
+                                    <button 
+                                        type='button' 
+                                        className="media-nav-btn"
+                                        onClick={() => setCurrent(c => Math.min(media.length - 1, c + 1))}
+                                    >
+                                        ›
+                                    </button>
+                                )}
+                                <button 
+                                    type='button' 
+                                    className="remove-btn"
+                                    onClick={() => removeAt(current)} 
+                                    disabled={media[current]?.uploading}
                                 >
-                                    {m.kind === 'video'
-                                        ? (
-                                            <div style={{
-                                                width: 64,
-                                                height: 64,
-                                                borderRadius: 4,
-                                                background: '#000',
-                                                color: '#fff',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                padding: 6
-                                            }}>
-                                                <span
-                                                    title={m.name || 'video'}
-                                                    style={{
-                                                        display: 'block',
-                                                        maxWidth: '100%',
-                                                        overflow: 'hidden',
-                                                        textOverflow: 'ellipsis',
-                                                        whiteSpace: 'nowrap',
-                                                        fontSize: 11,
-                                                        lineHeight: 1.1,
-                                                        textAlign: 'center'
-                                                    }}
-                                                >
-                                                    {m.uploading ? 'Uploading…' : (m.name || 'video')}
-                                                </span>
-                                            </div>
-                                        )
-                                        : (
-                                            m.uploading
-                                                ? <div style={{
-                                                    width: 64,
-                                                    height: 64,
-                                                    borderRadius: 4,
-                                                    background: '#000',
-                                                    color: '#fff',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                    fontSize: 12
-                                                }}>Uploading…</div>
-                                                : <img src={m.src} alt={`thumb-${i}`} style={{ width: 64, height: 64, objectFit: 'cover', borderRadius: 4 }} />
-                                        )}
-                                </div>
-                            ))}
+                                    Remove
+                                </button>
+                            </div>
+
+                            <div className="media-preview">
+                                {cur?.uploading ? (
+                                    <div className="loading-container">
+                                        <Spinner />
+                                        <div className="loading-text">Uploading media...</div>
+                                    </div>
+                                ) : cur?.kind === 'video' ? (
+                                    <video src={cur.src} controls />
+                                ) : (
+                                    <img src={cur?.src} alt='preview' />
+                                )}
+                            </div>
+
+                            <div className="thumbnail-container">
+                                {media.map((m, i) => (
+                                    <div
+                                        key={m.publicId || `ph-${i}`}
+                                        onClick={() => setCurrent(i)}
+                                        className={`thumbnail ${i === current ? 'active' : 'inactive'} ${m.uploading ? 'uploading' : ''}`}
+                                        title={m.kind === 'video' ? (m.name || 'video') : undefined}
+                                    >
+                                        {m.kind === 'video'
+                                            ? (
+                                                <div className="thumbnail-video">
+                                                    <span>
+                                                        {m.uploading ? 'Uploading…' : (m.name || 'video')}
+                                                    </span>
+                                                </div>
+                                            )
+                                            : (
+                                                m.uploading
+                                                    ? <div className="thumbnail-video">
+                                                        <span>Uploading…</span>
+                                                      </div>
+                                                    : <img src={m.src} alt={`thumb-${i}`} />
+                                            )}
+                                    </div>
+                                ))}
+                            </div>
                         </div>
-                    </div>
-                )}
+                    )}
 
-                <textarea
-                    placeholder='Write a caption…'
-                    value={caption}
-                    onChange={e => setCaption(e.target.value)}
-                    rows={3}
-                    style={{ width: '100%', marginTop: 10 }}
-                />
+                    <textarea
+                        placeholder='Write a caption…'
+                        value={caption}
+                        onChange={e => setCaption(e.target.value)}
+                        rows={3}
+                        className="caption-textarea"
+                    />
 
-                <button type='submit' style={{ marginTop: 10 }} disabled={isUploading}>
-                    {isUploading ? 'Processing…' : 'Post'}
-                </button>
-            </form>
+                    <button 
+                        type='submit' 
+                        className="post-btn"
+                        disabled={isUploading}
+                    >
+                        {isUploading ? 'Processing…' : 'Post'}
+                    </button>
+                </form>
 
-            {status && <div style={{ marginTop: 10, fontSize: 12, color: '#666' }}>{status}</div>}
+                {status && <div className="status-message">{status}</div>}
+            </div>
         </div>
     )
 }

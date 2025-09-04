@@ -32,7 +32,7 @@ const Navbar = ({ isLoggedIn, setIsLoggedIn }) => {
     return (
         <nav className="ig-nav">
             <div className="ig-logo" onClick={() => navigate('/')}>
-                InstagramPlus
+                <img src="/logoo.png" alt="Instagram Plus Logo" className="navbar-logo" />
             </div>
 
             <div className="ig-nav-list">

@@ -40,44 +40,46 @@ const Signup = () => {
     }
 
     return (
-        <div className="signup-container">
-            <h2>Signup</h2>
-            <form onSubmit={handleSubmit}>
-                <input
-                    type="text"
-                    placeholder="Username"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    required
-                />
-                <input
-                    type="email"
-                    placeholder="Email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                />
-                <input
-                    type="password"
-                    placeholder="Password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                />
-                <input
-                    type="password"
-                    placeholder="Confirm Password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    required
-                />
-                <button type="submit">Sign Up</button>
-            </form>
+        <div className="signup-page">
+            <div className="signup-container">
+                <img src="/logoo.png" alt="Instagram Plus Logo" className="auth-logo" />
+                <form onSubmit={handleSubmit}>
+                    <input
+                        type="text"
+                        placeholder="Username"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        required
+                    />
+                    <input
+                        type="email"
+                        placeholder="Email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                    />
+                    <input
+                        type="password"
+                        placeholder="Password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                    />
+                    <input
+                        type="password"
+                        placeholder="Confirm Password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        required
+                    />
+                    <button type="submit">Sign Up</button>
+                </form>
 
-            <p>
-                Already have an account?{' '}
-                <Link to="/login" className="login-link">Login here</Link>
-            </p>
+                <p>
+                    Already have an account?{' '}
+                    <Link to="/login" className="login-link">Login here</Link>
+                </p>
+            </div>
         </div>
     )
 }

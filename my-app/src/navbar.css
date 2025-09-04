@@ -20,6 +20,15 @@
     font-size: 22px;
     padding: 8px 12px;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.navbar-logo {
+    width: 180px;
+    height: auto;
+    filter: brightness(1.1);
 }
 
 .ig-nav-list {
