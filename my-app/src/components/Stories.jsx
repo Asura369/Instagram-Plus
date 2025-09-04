@@ -147,7 +147,7 @@ function Stories() {
             formData.append('prompt', `Place the person in a beautiful ${themes.find(t => t.id === selectedTheme)?.description} setting, photorealistic, high quality`)
 
             // Call AI generation API (you'll need to implement this endpoint)
-            const response = await axios.post(API_ENDPOINTS.generateStoryImage || '/api/generate-story', formData, {
+            const response = await axios.post(API_ENDPOINTS.generateStory, formData, {
                 headers: { 
                     ...headers, 
                     'Content-Type': 'multipart/form-data' 

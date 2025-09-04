@@ -48,6 +48,7 @@ export const API_ENDPOINTS = {
     // Upload endpoints
     uploadMedia: createApiUrl('upload/media'),
     uploadVideo: createApiUrl('upload/video'),
+    generateStory: createApiUrl('upload/generate-story'),
 
     // Messages endpoints
     messagesConversations: createApiUrl('messages/conversations'),
