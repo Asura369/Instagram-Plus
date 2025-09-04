@@ -4,6 +4,7 @@ import axios from 'axios'
 import { io } from 'socket.io-client'
 import './Messages.css'
 import { API_BASE_URL, API_ENDPOINTS } from '../config/api'
+import { HiOutlinePencilSquare } from 'react-icons/hi2'
 
 const socket = io(API_BASE_URL)
 
@@ -274,29 +275,15 @@ const Messages = () => {
         <div className="messages-container">
             <div className="sidebar">
                 <div className="sidebar-header">
-                    <h2 className="sidebar-title">Direct</h2>
-                    <button 
-                        className="new-message-btn" 
+                    <h2 className="sidebar-title">Messages</h2>
+                    <button
+                        className="new-message-btn"
                         onClick={() => fetchFollowUsers(currentUserId)}
                         title="New message"
+                        aria-label="New message"
                     >
-                        <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
-                            <path d="M12.202 3.203H5.25a3 3 0 00-3 3V18a3 3 0 003 3h9.75a3 3 0 003-3V9.75a3 3 0 00-3-3h-6.75z"></path>
-                            <path d="M14.25 3v4.5a1.5 1.5 0 01-1.5 1.5H9V3h5.25z"></path>
-                        </svg>
+                        <HiOutlinePencilSquare size={22} />
                     </button>
-                </div>
-
-                <div className="conversations-header">
-                    <span>Messages</span>
-                    {conversations.length > 0 && (
-                        <button 
-                            className="new-message-button" 
-                            onClick={() => fetchFollowUsers(currentUserId)}
-                        >
-                            ✏️
-                        </button>
-                    )}
                 </div>
 
                 <div className="conversations-list">
@@ -309,7 +296,7 @@ const Messages = () => {
                                 className={`conversation ${selectedConv?._id === conv._id ? 'active' : ''}`}
                                 onClick={() => setSelectedConv(conv)}
                             >
-                                <img 
+                                <img
                                     src={otherUser?.profilePic || 'https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png'}
                                     alt={`${otherUser?.username} profile`}
                                     className="conversation-avatar"
@@ -334,8 +321,8 @@ const Messages = () => {
                             <div className="no-conversations-icon">💬</div>
                             <h3>Your messages</h3>
                             <p>Send private photos and messages to a friend or group.</p>
-                            <button 
-                                className="send-message-btn" 
+                            <button
+                                className="send-message-btn"
                                 onClick={() => fetchFollowUsers(currentUserId)}
                             >
                                 Send message
@@ -348,7 +335,7 @@ const Messages = () => {
                     <div className="new-message-modal">
                         <div className="modal-header">
                             <h3>New message</h3>
-                            <button 
+                            <button
                                 className="close-modal-btn"
                                 onClick={() => setShowNewMsgModal(false)}
                             >
@@ -361,12 +348,12 @@ const Messages = () => {
                         <div className="suggested-label">Suggested</div>
                         <div className="users-list">
                             {usersList.map((user) => (
-                                <div 
-                                    key={user._id} 
-                                    className="user-item" 
+                                <div
+                                    key={user._id}
+                                    className="user-item"
                                     onClick={() => startConversation(user._id)}
                                 >
-                                    <img 
+                                    <img
                                         src={user.profilePic || 'https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png'}
                                         alt={`${user.username} profile`}
                                         className="user-avatar"
@@ -389,8 +376,8 @@ const Messages = () => {
                             {selectedConv.participants
                                 .filter((p) => p._id !== currentUserId)
                                 .map((user) => (
-                                    <div 
-                                        key={user._id} 
+                                    <div
+                                        key={user._id}
                                         className="chat-user-info"
                                         onClick={() => navigate(`/user/${user._id}`)}
                                         style={{ cursor: 'pointer' }}
@@ -412,20 +399,20 @@ const Messages = () => {
                             {messages.map((msg, index) => {
                                 const isOwn = msg.sender?._id === currentUserId || msg.sender === currentUserId
                                 const showAvatar = !isOwn && (index === 0 || messages[index - 1]?.sender?._id !== msg.sender?._id)
-                                
+
                                 return (
                                     <div
                                         key={msg._id}
                                         className={`message ${isOwn ? 'sent' : 'received'}`}
                                     >
                                         {showAvatar && (
-                                            <img 
+                                            <img
                                                 src={selectedConv.participants.find(p => p._id !== currentUserId)?.profilePic || 'https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png'}
                                                 alt="Profile"
                                                 className="message-avatar"
                                             />
                                         )}
-                                        
+
                                         <div className="message-content">
                                             {editingMessageId === msg._id ? (
                                                 <div className="edit-area">
@@ -465,7 +452,7 @@ const Messages = () => {
                                                     </div>
                                                     <div className="message-info">
                                                         <span className="timestamp">
-                                                            {new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                                            {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                         </span>
                                                         {isOwn && (
                                                             <div className="message-actions">
@@ -495,7 +482,7 @@ const Messages = () => {
                                     className="message-textarea"
                                     maxLength={maxChars}
                                 />
-                                <button 
+                                <button
                                     onClick={sendMessage}
                                     className="send-btn"
                                     disabled={!newMessage.trim()}
@@ -510,8 +497,8 @@ const Messages = () => {
                         <div className="direct-icon">📩</div>
                         <h2>Your messages</h2>
                         <p>Send private photos and messages to a friend or group.</p>
-                        <button 
-                            className="send-message-btn" 
+                        <button
+                            className="send-message-btn"
                             onClick={() => fetchFollowUsers(currentUserId)}
                         >
                             Send message

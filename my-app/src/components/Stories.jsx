@@ -367,7 +367,6 @@ function Stories() {
                             {/* User Photo Upload */}
                             <div style={{ marginBottom: '16px' }}>
                                 <label style={{ 
-                                    display: 'block', 
                                     marginBottom: '8px', 
                                     fontWeight: '600',
                                     color: '#555',
