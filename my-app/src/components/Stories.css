@@ -1,0 +1,107 @@
+/* AI Generator Styles */
+.ai-toggle-btn:hover {
+    transform: scale(1.05) !important;
+}
+
+.ai-generator-container {
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Theme selection buttons */
+.theme-button {
+    transition: all 0.2s ease;
+}
+
+.theme-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .ai-generator-container {
+        padding: 16px;
+        margin: 0 -10px 20px -10px;
+    }
+    
+    .ai-toggle-btn {
+        padding: 10px 20px !important;
+        font-size: 13px !important;
+    }
+}
+
+/* Loading animation for AI generation */
+.ai-generating {
+    position: relative;
+    overflow: hidden;
+}
+
+.ai-generating::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.2), transparent);
+    animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        left: -100%;
+    }
+    100% {
+        left: 100%;
+    }
+}
+
+/* Generated image preview styling */
+.generated-preview {
+    position: relative;
+    display: inline-block;
+}
+
+.generated-preview::before {
+    content: '✨ AI Generated';
+    position: absolute;
+    top: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 600;
+    z-index: 1;
+}
+
+/* Button hover effects */
+button:hover {
+    transition: all 0.2s ease;
+}
+
+.generate-btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.use-btn:hover {
+    background: #218838 !important;
+}
+
+.clear-btn:hover {
+    background: #c82333 !important;
+}

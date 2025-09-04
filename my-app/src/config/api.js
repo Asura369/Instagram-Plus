@@ -4,7 +4,7 @@ const isDevelopment = import.meta.env.MODE === 'development' ||
     window.location.hostname === 'localhost';
 
 export const API_BASE_URL = isDevelopment
-    ? 'http://localhost:5000'
+    ? 'http://localhost:5001'
     : 'https://instaplus.up.railway.app';
 
 // Helper function to create full API URLs
@@ -48,6 +48,13 @@ export const API_ENDPOINTS = {
     // Upload endpoints
     uploadMedia: createApiUrl('upload/media'),
     uploadVideo: createApiUrl('upload/video'),
+    generateStoryImage: createApiUrl('upload/generate-story'),
+    
+    // MongoDB Image endpoints
+    getImage: (imageId) => createApiUrl(`upload/images/${imageId}`),
+    getImageMetadata: (imageId) => createApiUrl(`upload/images/${imageId}/metadata`),
+    deleteImage: (imageId) => createApiUrl(`upload/images/${imageId}`),
+    getUserImages: createApiUrl('upload/my-images'),
 
     // Messages endpoints
     messagesConversations: createApiUrl('messages/conversations'),

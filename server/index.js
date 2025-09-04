@@ -125,7 +125,7 @@ io.on('connection', (socket) => {
     })
 })
 
-const PORT = process.env.PORT || 5000
+const PORT = process.env.PORT || 5001
 
 mongoose.connect(process.env.CONNECTION_URL)
     .then(() => {
